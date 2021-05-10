@@ -9,6 +9,7 @@ class SongJSONValidator(Schema):
 
 class PodcastJSONValidator(Schema):
     title = fields.String(data_key="title", required=True, validate=Length(max=100))
+    duration = fields.Integer(data_key="duration", required=True, validate=Range(min=1))
     host = fields.String(data_key="host", required=True, validate=Length(max=100))
     participants = fields.List(
         fields.String(validate=Length(max=100)),
@@ -20,5 +21,7 @@ class PodcastJSONValidator(Schema):
 
 class AudiobookJSONValidator(Schema):
     title = fields.String(data_key="title", required=True, validate=Length(max=100))
-    narrator = fields.String(data_key="narrator", required=True)
+    duration = fields.Integer(data_key="duration", required=True, validate=Range(min=1))
+    author = fields.String(data_key="author", required=True, validate=Length(max=100))
+    narrator = fields.String(data_key="narrator", required=True, validate=Length(max=100))
 
