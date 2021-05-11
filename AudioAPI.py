@@ -1,73 +1,91 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, jsonify
-from JSONValidatorModels import SongJSONValidator
 
-
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:mrugeshroot@localhost/getybo"
-db = SQLAlchemy(app)
-
+from JSONValidator import payload_validation
 from Models import Song, Podcast, Audiobook
 
 
-@app.route("/api/<str:audioFileType>", methods=["POST"])
-def upload_audio(file_type):
+app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:mrugeshroot@localhost/getybo"
+db = SQLAlchemy(app)
+
+
+@app.route("/api/<audioFileType>", methods=["POST"])
+@payload_validation
+def upload_audio(audioFileType):
+    try:
+        json_data = request.json
+
+        if audioFileType == "Song":
+            obj = Song(title=json_data["title"], duration=json_data["duration"])
+        elif audioFileType == "Podcast":
+            obj = Podcast(title=json_data["title"], duration=json_data["duration"], host=json_data["host"], participants=json_data["participants"])
+        elif audioFileType == "Audiobook":
+            obj = Audiobook(title=json_data["title"], duration=json_data["duration"], author=json_data["author"], narrator=json_data["narrator"])
+        else:
+            return jsonify({"message": "Invalid Audio File Type"}), 400
+
+        db.session.add(obj)
+        db.session.commit()
+
+        return jsonify({"message": "Success"}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"message": "Internal Server Error"}), 500
+
+
+@app.route("/api/<audioFileType>/<audioFileID>", methods=["PUT"])
+@payload_validation
+def update_audio(audioFileType):
     json_data = request.json
 
-    if json_data == "Song":
-        json_validation = SongJSONValidator().validate(json_data)
-
-    elif json_data == "Podcast":
-        json_validation = SongJSONValidator().validate(json_data)
-
-    elif json_data == "Audiobook":
-        json_validation = SongJSONValidator().validate(json_data)
-
-    else:
-        return jsonify({"message": "Invalid Audio Type"}), 400
-
-    if json_validation:
-        return jsonify({"message": "Invalid Payload"}), 400
-
     return jsonify({"message": "Success"}), 200
 
 
-@app.route("/api/<str:audioFileType>/<int:audioFileID>", methods=["PUT"])
-def update_audio(file_type):
-    json_data = request.json
+@app.route("/api/<audioFileType>/<audioFileID>", methods=["DELETE"])
+def delete_audio(audioFileType, audioFileID):
+    try:
+        if audioFileType == "Song":
+            model = Song
+        elif audioFileType == "Podcast":
+            model = Podcast
+        elif audioFileType == "Audiobook":
+            model = Audiobook
+        else:
+            return jsonify({"message": "Invalid Audio File Type"}), 400
 
-    if json_data == "Song":
-        json_validation = SongJSONValidator().validate(json_data)
+        data = db.session.query(model).filter(model.id == audioFileID).delete()
+        print(data)
+        db.session.commit()
 
-    elif json_data == "Podcast":
-        json_validation = SongJSONValidator().validate(json_data)
-
-    elif json_data == "Audiobook":
-        json_validation = SongJSONValidator().validate(json_data)
-
-    else:
-        return jsonify({"message": "Invalid Audio Type"}), 400
-
-    if json_validation:
-        return jsonify({"message": "Invalid Payload"}), 400
-
-    return jsonify({"message": "Success"}), 200
-
-
-@app.route("/api/<str:audioFileType>/<int:audioFileID>", methods=["DELETE"])
-def delete_audio(file_type):
-
-    id_ = request.args.get("id")
-
-    return jsonify({"message": "Success"}), 200
+        return jsonify({"message": "Success"}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"message": "Internal Server Error"}), 500
 
 
-@app.route("/api/<str:audioFileType>/<int:audioFileID>", methods=["GET"])
-def get_audio(file_type):
+@app.route("/api/<audioFileType>/<audioFileID>", methods=["GET"])
+def get_audio(audioFileType, audioFileID):
+    try:
+        print(audioFileID)
 
-    id_ = request.args.get("id")
+        if audioFileType == "Song":
+            model = Song
+        elif audioFileType == "Podcast":
+            model = Podcast
+        elif audioFileType == "Audiobook":
+            model = Audiobook
+        else:
+            return jsonify({"message": "Invalid Audio File Type"}), 400
 
-    return jsonify({"message": "Success"}), 200
+        data = db.session.query(model).filter(model.id == audioFileID).one_or_none()
+
+        print(data)
+
+        return jsonify({"data": data if data else {}}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"message": "Internal Server Error"}), 500
 
 
 if __name__ == "__main__":
