@@ -3,37 +3,10 @@ import datetime
 
 from dataclasses import dataclass
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, JSON
 
 Base = declarative_base()
 
-
-# class Song(db.Model):
-#     __tablename__ = "filed_songs"
-#     id = db.Column(db.Integer, primary_key=True)
-#     title = db.Column(db.String(100))
-#     duration = db.Column(db.Integer)
-#     uploaded_time = db.Column(db.DateTime, default=datetime.datetime.now)
-#
-#
-# class Podcast(db.Model):
-#     __tablename__ = "filed_podcast"
-#     id = db.Column(db.Integer, primary_key=True)
-#     title = db.Column(db.String(100))
-#     duration = db.Column(db.Integer)
-#     uploaded_time = db.Column(db.DateTime, default=datetime.datetime.now)
-#     host = db.Column(db.String(100))
-#     participants = db.Column(db.String(100))
-#
-#
-# class Audiobook(db.Model):
-#     __tablename__ = "filed_audiobook"
-#     id = db.Column(db.Integer, primary_key=True)
-#     title = db.Column(db.String(100))
-#     duration = db.Column(db.Integer)
-#     uploaded_time = db.Column(db.DateTime, default=datetime.datetime.now)
-#     author = db.Column(db.String(100))
-#     narrator = db.Column(db.String(100))
 
 @dataclass
 class Song(Base):
@@ -56,7 +29,7 @@ class Podcast(Base):
     duration: int
     uploaded_time: datetime
     host: str
-    participants: str
+    participants: list
 
     __tablename__ = "filed_podcast"
 
@@ -65,7 +38,7 @@ class Podcast(Base):
     duration = Column(Integer)
     uploaded_time = Column(DateTime, default=datetime.datetime.now)
     host = Column(String(100))
-    participants = Column(String(100))
+    participants = Column(JSON, nullable=True)
 
 
 @dataclass
