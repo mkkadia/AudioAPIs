@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, jsonify
-from JSONValidator import SongJSONValidator
+from JSONValidatorModels import SongJSONValidator
 
 
 app = Flask(__name__)
@@ -10,10 +10,21 @@ db = SQLAlchemy(app)
 from Models import Song, Podcast, Audiobook
 
 
-@app.route("/api/create/<file_type>", methods=["POST"])
+@app.route("/api/<str:audioFileType>", methods=["POST"])
 def upload_audio(file_type):
+    json_data = request.json
 
-    json_validation = SongJSONValidator().validate(request.json)
+    if json_data == "Song":
+        json_validation = SongJSONValidator().validate(json_data)
+
+    elif json_data == "Podcast":
+        json_validation = SongJSONValidator().validate(json_data)
+
+    elif json_data == "Audiobook":
+        json_validation = SongJSONValidator().validate(json_data)
+
+    else:
+        return jsonify({"message": "Invalid Audio Type"}), 400
 
     if json_validation:
         return jsonify({"message": "Invalid Payload"}), 400
@@ -21,10 +32,21 @@ def upload_audio(file_type):
     return jsonify({"message": "Success"}), 200
 
 
-@app.route("/api/update/<file_type>", methods=["PUT"])
+@app.route("/api/<str:audioFileType>/<int:audioFileID>", methods=["PUT"])
 def update_audio(file_type):
+    json_data = request.json
 
-    json_validation = SongJSONValidator().validate(request.json)
+    if json_data == "Song":
+        json_validation = SongJSONValidator().validate(json_data)
+
+    elif json_data == "Podcast":
+        json_validation = SongJSONValidator().validate(json_data)
+
+    elif json_data == "Audiobook":
+        json_validation = SongJSONValidator().validate(json_data)
+
+    else:
+        return jsonify({"message": "Invalid Audio Type"}), 400
 
     if json_validation:
         return jsonify({"message": "Invalid Payload"}), 400
@@ -32,7 +54,7 @@ def update_audio(file_type):
     return jsonify({"message": "Success"}), 200
 
 
-@app.route("/api/delete/<file_type>", methods=["DELETE"])
+@app.route("/api/<str:audioFileType>/<int:audioFileID>", methods=["DELETE"])
 def delete_audio(file_type):
 
     id_ = request.args.get("id")
@@ -40,7 +62,7 @@ def delete_audio(file_type):
     return jsonify({"message": "Success"}), 200
 
 
-@app.route("/api/get/<file_type>", methods=["GET"])
+@app.route("/api/<str:audioFileType>/<int:audioFileID>", methods=["GET"])
 def get_audio(file_type):
 
     id_ = request.args.get("id")
